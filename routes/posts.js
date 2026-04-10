@@ -38,6 +38,34 @@ router.get("/:id", async (req, res) => {
 
 // Add new post
 
+router.post("/", async (req, res) => {
+  try {
+    const { title, content } = req.body;
+
+    if (!title || !content) {
+      return res
+        .status(400)
+        .json({ message: "Error accured fill in fields please" });
+    }
+
+    const newPost = await Post.create({
+      title,
+      content,
+    });
+
+    if (!newPost) {
+      return res
+        .status(400)
+        .json({ message: "Error accured post was not made" });
+    }
+
+    res.status(201).json({ message: "Post created succesfully", newPost });
+  } catch (err) {
+    console.log(err);
+    res.status(500).json("Server error");
+  }
+});
+
 // Eddit post
 
 // Delete post
