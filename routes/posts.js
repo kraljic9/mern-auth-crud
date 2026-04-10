@@ -72,6 +72,12 @@ router.put("/:id", async (req, res) => {
   try {
     const { title, content } = req.body;
 
+    if (!title || !content) {
+      return res
+        .status(400)
+        .json({ message: "Error accured fill in fields please" });
+    }
+
     const id = req.params.id;
 
     const post = await Post.findByIdAndUpdate(
@@ -97,5 +103,23 @@ router.put("/:id", async (req, res) => {
 });
 
 // Delete post
+
+router.delete("/:id", async (req, res) => {
+  try {
+    const id = req.params.id;
+    const post = await Post.findByIdAndDelete(id);
+
+    if (!post) {
+      return res
+        .status(404)
+        .json({ message: `Error accured post with id ${id} was not found` });
+    }
+
+    res.status(200).json({ message: "Post deleted succes", post });
+  } catch (err) {
+    console.log(err);
+    res.status(500).json("Server error");
+  }
+});
 
 export default router;
