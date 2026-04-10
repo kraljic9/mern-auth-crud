@@ -68,6 +68,34 @@ router.post("/", async (req, res) => {
 
 // Eddit post
 
+router.put("/:id", async (req, res) => {
+  try {
+    const { title, content } = req.body;
+
+    const id = req.params.id;
+
+    const post = await Post.findByIdAndUpdate(
+      id,
+      {
+        title,
+        content,
+      },
+      { new: true },
+    );
+
+    if (!post) {
+      return res
+        .status(404)
+        .json({ message: `Error accured post with id ${id} was not found` });
+    }
+
+    res.status(200).json({ message: "Post eddit succes", post });
+  } catch (err) {
+    console.log(err);
+    res.status(500).json("Server error");
+  }
+});
+
 // Delete post
 
 export default router;
