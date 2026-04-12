@@ -2,7 +2,7 @@ import mongoose from "mongoose";
 import bcrypt from "bcrypt";
 
 const userSchema = new mongoose.Schema({
-  userName: {
+  username: {
     type: String,
     required: true,
     unique: true,
@@ -27,7 +27,7 @@ const userSchema = new mongoose.Schema({
 
 userSchema.pre("save", async function (next) {
   try {
-    if (this.isModified("password")) return next();
+    if (this.isModified("password")) return next;
     const salt = bcrypt.genSalt(10);
     this.password = bcrypt.hash(this.password, salt);
     next();
