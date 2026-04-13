@@ -1,7 +1,7 @@
-import mongoose from "mongoose";
 import express from "express";
 import User from "../models/user.js";
 import bcrypt from "bcrypt";
+import jwt from "jsonwebtoken";
 const router = express.Router();
 
 // Register user
@@ -32,7 +32,11 @@ router.post("/register", async (req, res) => {
       return res.status(400).json({ message: "Error user already exists" });
     }
 
-    res.status(201).json({ message: `User created, welcome ${username}` });
+    const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET, {
+      expiresIn: "1d",
+    });
+
+    res.status(201).json({ user: { id: user.id, username, email }, token });
   } catch (err) {
     console.log(err);
     return res.status(500).json({ message: "Server error" });
@@ -60,7 +64,11 @@ router.post("/login", async (req, res) => {
     return res.status(400).json({ message: "Error wrong password input" });
   }
 
-  res.status(201).json({ message: `User logged in, welcome ${user.username}` });
+  const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET, {
+    expiresIn: "1d",
+  });
+
+  res.status(200).json({ user: { id: user.id, username, email }, token });
 });
 
 export default router;
