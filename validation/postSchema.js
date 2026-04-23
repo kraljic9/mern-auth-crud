@@ -8,6 +8,6 @@ export const postSchema = z.object({
 
   content: z
     .string()
-    .min(5, "Error title must be atleast 5 characters or more")
-    .max(100, "Error title must be atleast 5 characters or more"),
+    .min(5, "Error content must be atleast 5 characters or more")
+    .max(100, "Error content must be atleast 5 characters or more"),
 });
