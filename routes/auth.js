@@ -3,24 +3,20 @@ import User from "../models/user.js";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 const router = express.Router();
+import { userSchema } from "../validation/userSchema.js";
 
 // Register user
 
 router.post("/register", async (req, res) => {
   try {
-    const { username, email, password } = req.body;
-
-    if (!username || !email || !password) {
-      return res
-        .status(400)
-        .json({ message: "Error all fields must be filled" });
-    }
+    const { username, email, password } = userSchema.parse(req.body);
 
     const existingUser = await User.findOne({ email });
 
     if (existingUser) {
       return res.status(400).json({ message: "Error user already exists" });
     }
+
     const user = await User.create({
       username,
       email,
