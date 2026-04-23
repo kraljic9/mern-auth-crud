@@ -51,6 +51,7 @@ router.post("/", auth, async (req, res) => {
     const newPost = await Post.create({
       title,
       content,
+      author: req.user,
     });
 
     if (!newPost) {
