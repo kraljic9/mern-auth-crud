@@ -60,24 +60,11 @@ router.post("/", auth, async (req, res) => {
 
 router.put("/:id", auth, async (req, res) => {
   try {
-    const { title, content } = req.body;
-
-    if (!title || !content) {
-      return res
-        .status(400)
-        .json({ message: "Error accured fill in fields please" });
-    }
+    const { title, content } = postSchema.parse(req.body);
 
     const id = req.params.id;
 
-    const post = await Post.findByIdAndUpdate(
-      id,
-      {
-        title,
-        content,
-      },
-      { new: true },
-    );
+    const post = await Post.findById(id);
 
     if (!post) {
       return res
@@ -85,7 +72,17 @@ router.put("/:id", auth, async (req, res) => {
         .json({ message: `Error accured post with id ${id} was not found` });
     }
 
-    res.status(200).json({ message: "Post eddit succes", post });
+    if (post.author.toString() !== req.user) {
+      return res.status(404).json({ message: `Error this is not your post` });
+    }
+
+    post.title = title || post.title;
+
+    post.content = content || post.content;
+
+    const newPost = await post.save();
+
+    res.status(200).json({ message: "Post eddit succes", post: newPost });
   } catch (err) {
     console.log(err);
     res.status(500).json("Server error");
@@ -105,7 +102,12 @@ router.delete("/:id", auth, async (req, res) => {
         .json({ message: `Error accured post with id ${id} was not found` });
     }
 
-    res.status(200).json({ message: "Post deleted succes", post });
+    if (post.user.toString() !== req.user) {
+      return res.status(403).json({ message: `Error this is not your post` });
+    }
+
+    await post.deleteOne();
+    res.status(201).json({ message: "Post deleted successfully" });
   } catch (err) {
     console.log(err);
     res.status(500).json("Server error");
