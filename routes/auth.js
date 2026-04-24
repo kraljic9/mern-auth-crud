@@ -4,10 +4,11 @@ import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 const router = express.Router();
 import { userSchema } from "../validation/userSchema.js";
+import auth from "../middleware/auth.js";
 
-router.get("/me", (req, res) => {
+router.get("/me", auth, async (req, res) => {
   try {
-    const user = User.findById(req.user).select("-password");
+    const user = await User.findById(req.user).select("-password");
 
     res.status(200).json(user);
   } catch (err) {
