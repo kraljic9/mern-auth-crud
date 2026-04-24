@@ -1,6 +1,7 @@
 import express from "express";
 import Post from "../models/post.js";
 import auth from "../middleware/auth.js";
+import { postSchema } from "../validation/postSchema.js";
 const router = express.Router();
 
 // Get posts
@@ -40,25 +41,13 @@ router.get("/:id", auth, async (req, res) => {
 
 router.post("/", auth, async (req, res) => {
   try {
-    const { title, content } = req.body;
-
-    if (!title || !content) {
-      return res
-        .status(400)
-        .json({ message: "Error accured fill in fields please" });
-    }
+    const { title, content } = postSchema.parse(req.body);
 
     const newPost = await Post.create({
       title,
       content,
       author: req.user,
     });
-
-    if (!newPost) {
-      return res
-        .status(400)
-        .json({ message: "Error accured post was not made" });
-    }
 
     res.status(201).json({ message: "Post created succesfully", newPost });
   } catch (err) {
