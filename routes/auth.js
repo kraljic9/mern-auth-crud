@@ -5,6 +5,17 @@ import jwt from "jsonwebtoken";
 const router = express.Router();
 import { userSchema } from "../validation/userSchema.js";
 
+router.get("/me", (req, res) => {
+  try {
+    const user = User.findById(req.user).select("-password");
+
+    res.status(200).json(user);
+  } catch (err) {
+    console.log(err);
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
 // Register user
 
 router.post("/register", async (req, res) => {
