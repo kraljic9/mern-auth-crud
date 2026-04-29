@@ -10,7 +10,7 @@ app.use(express.json());
 app.use("/posts", postRouter);
 app.use("/user", userRouter);
 
-app.get("/", (req, res) => {
+app.get("/", (req, res) => { 
   res.send("Welcome to my server");
 });
 

@@ -102,7 +102,7 @@ router.delete("/:id", auth, async (req, res) => {
         .json({ message: `Error accured post with id ${id} was not found` });
     }
 
-    if (post.user.toString() !== req.user) {
+    if (post.author.toString() !== req.user) {
       return res.status(403).json({ message: `Error this is not your post` });
     }
 
