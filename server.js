@@ -2,6 +2,8 @@ import express from "express";
 import connectDB from "./db.js";
 import postRouter from "./routes/posts.js";
 import userRouter from "./routes/auth.js";
+import { errorHandler } from "./middleware/errorHandler.js";
+
 const app = express();
 const PORT = process.env.PORT || 5000;
 
@@ -9,8 +11,9 @@ connectDB();
 app.use(express.json());
 app.use("/posts", postRouter);
 app.use("/user", userRouter);
+app.use(errorHandler);
 
-app.get("/", (req, res) => { 
+app.get("/", (req, res) => {
   res.send("Welcome to my server");
 });
 
