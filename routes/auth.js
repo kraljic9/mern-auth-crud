@@ -2,31 +2,34 @@ import express from "express";
 import User from "../models/user.js";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
-const router = express.Router();
-import { userSchema } from "../validation/userSchema.js";
 import auth from "../middleware/auth.js";
+import { userSchema } from "../validation/userSchema.js";
+import { asyncHandler } from "../utils/asyncHandler.js";
 
-router.get("/me", auth, async (req, res) => {
-  try {
+const router = express.Router();
+
+router.get(
+  "/me",
+  auth,
+  asyncHandler(async (req, res) => {
     const user = await User.findById(req.user).select("-password");
 
     res.status(200).json(user);
-  } catch (err) {
-    console.log(err);
-    res.status(500).json({ message: "Server error" });
-  }
-});
+  }),
+);
 
 // Register user
 
-router.post("/register", async (req, res) => {
-  try {
+router.post(
+  "/register",
+  asyncHandler(async (req, res) => {
     const { username, email, password } = userSchema.parse(req.body);
 
     const existingUser = await User.findOne({ email });
 
     if (existingUser) {
-      return res.status(400).json({ message: "Error user already exists" });
+      res.status(400);
+      throw new Error("Error user already exists");
     }
 
     const user = await User.create({
@@ -40,34 +43,33 @@ router.post("/register", async (req, res) => {
     });
 
     res.status(201).json({ user: { id: user._id, username, email }, token });
-  } catch (err) {
-    console.log(err);
-    return res.status(500).json({ message: "Server error" });
-  }
-});
+  }),
+);
 
 // Login user
 
-router.post("/login", async (req, res) => {
-  try {
+router.post(
+  "/login",
+  asyncHandler(async (req, res) => {
     const { email, password } = req.body;
 
     if (!email || !password) {
-      return res
-        .status(400)
-        .json({ message: "Error all fields must be filled" });
+      res.status(400);
+      throw new Error("Error all fields must be filled");
     }
 
     const user = await User.findOne({ email });
 
     if (!user) {
-      return res.status(400).json({ message: "Error user not found" });
+      res.status(400);
+      throw new Error("Error user not found");
     }
 
     const isMatch = await bcrypt.compare(password, user.password);
 
     if (!isMatch) {
-      return res.status(400).json({ message: "Error wrong password input" });
+      res.status(400);
+      throw new Error("Error wrong password input");
     }
 
     const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
@@ -77,10 +79,7 @@ router.post("/login", async (req, res) => {
     res
       .status(200)
       .json({ user: { id: user._id, username: user.username, email }, token });
-  } catch (err) {
-    console.log(err);
-    res.status(500).json({ message: "Server error" });
-  }
-});
+  }),
+);
 
 export default router;
