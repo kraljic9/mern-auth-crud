@@ -2,45 +2,45 @@ import express from "express";
 import Post from "../models/post.js";
 import auth from "../middleware/auth.js";
 import { postSchema } from "../validation/postSchema.js";
+import { asyncHandler } from "../utils/asyncHandler.js";
+
 const router = express.Router();
 
 // Get posts
 
-router.get("/", async (req, res) => {
-  try {
+router.get(
+  "/",
+  asyncHandler(async (req, res) => {
     const posts = await Post.find();
     res.status(200).json(posts);
-  } catch (err) {
-    console.log(err);
-    res.status(500).json("Server error");
-  }
-});
+  }),
+);
 
 // Get individual post
 
-router.get("/:id", auth, async (req, res) => {
-  try {
+router.get(
+  "/:id",
+  auth,
+  asyncHandler(async (req, res) => {
     const id = req.params.id;
 
     const post = await Post.findById(id);
 
     if (!post) {
-      return res
-        .status(404)
-        .json({ message: `Error accured post with id ${id} was not found` });
+      res.status(404);
+      throw new Error(`Error post ${id} does not exist`);
     }
 
     res.status(200).json(post);
-  } catch (err) {
-    console.log(err);
-    res.status(500).json("Server error");
-  }
-});
+  }),
+);
 
 // Add new post
 
-router.post("/", auth, async (req, res) => {
-  try {
+router.post(
+  "/",
+  auth,
+  asyncHandler(async (req, res) => {
     const { title, content } = postSchema.parse(req.body);
 
     const newPost = await Post.create({
@@ -50,16 +50,15 @@ router.post("/", auth, async (req, res) => {
     });
 
     res.status(201).json({ message: "Post created succesfully", newPost });
-  } catch (err) {
-    console.log(err);
-    res.status(500).json("Server error");
-  }
-});
+  }),
+);
 
 // Eddit post
 
-router.put("/:id", auth, async (req, res) => {
-  try {
+router.put(
+  "/:id",
+  auth,
+  asyncHandler(async (req, res) => {
     const { title, content } = postSchema.parse(req.body);
 
     const id = req.params.id;
@@ -67,13 +66,13 @@ router.put("/:id", auth, async (req, res) => {
     const post = await Post.findById(id);
 
     if (!post) {
-      return res
-        .status(404)
-        .json({ message: `Error accured post with id ${id} was not found` });
+      res.status(404);
+      throw new Error(`Error accured post with id ${id} was not found`);
     }
 
     if (post.author.toString() !== req.user) {
-      return res.status(404).json({ message: `Error this is not your post` });
+      res.status(404);
+      throw new Error(`Error this is not your post`);
     }
 
     post.title = title || post.title;
@@ -83,35 +82,31 @@ router.put("/:id", auth, async (req, res) => {
     const newPost = await post.save();
 
     res.status(200).json({ message: "Post eddit succes", post: newPost });
-  } catch (err) {
-    console.log(err);
-    res.status(500).json("Server error");
-  }
-});
+  }),
+);
 
 // Delete post
 
-router.delete("/:id", auth, async (req, res) => {
-  try {
+router.delete(
+  "/:id",
+  auth,
+  asyncHandler(async (req, res) => {
     const id = req.params.id;
     const post = await Post.findByIdAndDelete(id);
 
     if (!post) {
-      return res
-        .status(404)
-        .json({ message: `Error accured post with id ${id} was not found` });
+      res.status(404);
+      throw new Error(`Error accured post with id ${id} was not found`);
     }
 
     if (post.author.toString() !== req.user) {
-      return res.status(403).json({ message: `Error this is not your post` });
+      res.status(403);
+      throw new Error(`Error this is not your post`);
     }
 
     await post.deleteOne();
     res.status(201).json({ message: "Post deleted successfully" });
-  } catch (err) {
-    console.log(err);
-    res.status(500).json("Server error");
-  }
-});
+  }),
+);
 
 export default router;
