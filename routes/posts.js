@@ -11,7 +11,7 @@ const router = express.Router();
 router.get(
   "/",
   asyncHandler(async (req, res) => {
-    const posts = await Post.find();
+    const posts = await Post.find().populate("author", "username email");
     res.status(200).json(posts);
   }),
 );
@@ -24,7 +24,7 @@ router.get(
   asyncHandler(async (req, res) => {
     const id = req.params.id;
 
-    const post = await Post.findById(id);
+    const post = await Post.findById(id).populate("author", "username");
 
     if (!post) {
       res.status(404);
