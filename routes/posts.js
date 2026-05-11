@@ -24,14 +24,19 @@ router.get(
   asyncHandler(async (req, res) => {
     const id = req.params.id;
 
-    const post = await Post.findById(id).populate("author", "username");
+    const post = await Post.findById(id);
 
     if (!post) {
       res.status(404);
       throw new Error(`Error post ${id} does not exist`);
     }
 
-    res.status(200).json(post);
+    const comment = await Comment.find({ post: id }).populate(
+      "author",
+      "username",
+    );
+
+    res.status(200).json({ post, comment });
   }),
 );
 
